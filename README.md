@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [![Build Status](https://travis-ci.org/Automattic/_s.svg?branch=master)](https://travis-ci.org/Automattic/_s)
 
 _s
@@ -45,3 +46,8 @@ Then, update the stylesheet header in `style.css`, the links in `footer.php` wit
 Now you're ready to go! The next step is easy to say, but harder to do: make an awesome WordPress theme. :)
 
 Good luck!
+=======
+# codelab
+
+Codelab theme development
+>>>>>>> f157e0d9ed46a88790ed2df9fa54a2ad6c2d5b90
