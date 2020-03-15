@@ -79,8 +79,76 @@ if ( ! function_exists( 'codelab_setup' ) ) :
 			'flex-width'  => true,
 			'flex-height' => true,
 		) );
+
+		
+		/**
+		 * Do Elementor or Jet Theme Core location
+		 *
+		 * @param string $location
+		 * @param string $fallback
+		 *
+		 * @return bool
+		 */
+		public function do_location( $location = null, $fallback = null ) {
+
+			$handler = false;
+			$done    = false;
+
+			// Choose handler
+			if ( function_exists( 'jet_theme_core' ) ) {
+				$handler = array( jet_theme_core()->locations, 'do_location' );
+			} elseif ( function_exists( 'elementor_theme_do_location' ) ) {
+				$handler = 'elementor_theme_do_location';
+			}
+
+			// If handler is found - try to do passed location
+			if ( false !== $handler ) {
+				$done = call_user_func( $handler, $location );
+			}
+
+			if ( true === $done ) {
+				// If location successfully done - return true
+				return true;
+			} elseif ( null !== $fallback ) {
+				// If for some reasons location coludn't be done and passed fallback template name - include this template and return
+				if ( is_array( $fallback ) ) {
+					// fallback in name slug format
+					get_template_part( $fallback[0], $fallback[1] );
+				} else {
+					// fallback with just a name
+					get_template_part( $fallback );
+				}
+				return true;
+			}
+
+			// In other cases - return false
+			return false;
+
+		}
+
+
+		
+		/**
+		 * Returns the instance.
+		 *
+		 * @since  1.0.0
+		 * @return Codelab_Theme_Setup
+		 */
+		public static function get_instance() {
+
+			// If the single instance hasn't been set, set it now.
+			if ( null == self::$instance ) {
+				self::$instance = new self;
+			}
+
+			return self::$instance;
+
+		}
+
 	}
 endif;
+
+
 add_action( 'after_setup_theme', 'codelab_setup' );
 
 /**
@@ -159,3 +227,16 @@ if ( defined( 'JETPACK__VERSION' ) ) {
 	require get_template_directory() . '/inc/jetpack.php';
 }
 
+
+
+/**
+ * Returns instance of main theme configuration class.
+ *
+ * @since  1.0.0
+ * @return Codelab_Theme_Setup
+ */
+function codelab_theme() {
+	return Codelab_Theme_Setup::get_instance();
+}
+
+codelab_theme();
