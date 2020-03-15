@@ -56,3 +56,13 @@
 	</header><!-- #masthead -->
 
 	<div id="content" class="site-content">
+
+
+<body <?php body_class(); ?>>
+<div id="page" class="site">
+	<a class="skip-link screen-reader-text" href="#content"><?php esc_html_e( 'Skip to content', 'codelab' ); ?></a>
+	<header id="masthead" ?>>
+		<?php kava_theme()->do_location( 'header', 'template-parts/header' ); ?>
+	</header><!-- #masthead -->
+	<div id="content" ?>>
+

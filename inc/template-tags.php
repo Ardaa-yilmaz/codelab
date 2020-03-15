@@ -146,3 +146,27 @@ if ( ! function_exists( 'codelab_post_thumbnail' ) ) :
 		endif; // End is_singular().
 	}
 endif;
+
+
+if ( ! function_exists( 'kava_header_logo' ) ) :
+	/**
+	 * Display the header logo.
+	 *
+	 * @since  1.0.0
+	 * @return void
+	 */
+	function kava_header_logo() {
+		if ( has_custom_logo() ) {
+			the_custom_logo();
+		} else {
+			$logo = get_bloginfo( 'name' );
+	
+			$format = apply_filters(
+				'kava-theme/header/logo-format',
+				'<h1 class="site-logo"><a class="site-logo__link" href="%1$s" rel="home">%2$s</a></h1>'
+			);
+	
+			printf( $format, esc_url( home_url( '/' ) ), $logo );
+		}
+	}
+	endif;
