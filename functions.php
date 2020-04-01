@@ -1,86 +1,378 @@
 <?php
-/**
- * codelab functions and definitions
- *
- * @link https://developer.wordpress.org/themes/basics/theme-functions/
- *
- * @package codelab
- */
-
-if ( ! function_exists( 'codelab_setup' ) ) :
+if( ! class_exists(Aura_Theme_Setup)) {
 	/**
 	 * Sets up theme defaults and registers support for various WordPress features.
 	 *
-	 * Note that this function is hooked into the after_setup_theme hook, which
-	 * runs before the init hook. The init hook is too late for some features, such
-	 * as indicating support for post thumbnails.
+	 * @since 1.0.0
 	 */
-	function codelab_setup() {
-		/*
-		 * Make theme available for translation.
-		 * Translations can be filed in the /languages/ directory.
-		 * If you're building a theme based on codelab, use a find and replace
-		 * to change 'codelab' to the name of your theme in all the template files.
-		 */
-		load_theme_textdomain( 'codelab', get_template_directory() . '/languages' );
+	class Aura_Theme_Setup {
+		private static $instanse = null;
+	
 
-		// Add default posts and comments RSS feed links to head.
-		add_theme_support( 'automatic-feed-links' );
+	// private $is_blog = false;
+	// public $sidebar_position = 'none';
+	// public $modules = array();
+	// public $version;
+	// public $framework;
+	// public $customizer = null;
+	// public $dynamic_css = null;
 
-		/*
-		 * Let WordPress manage the document title.
-		 * By adding theme support, we declare that this theme does not use a
-		 * hard-coded <title> tag in the document head, and expect WordPress to
-		 * provide it for us.
-		 */
-		add_theme_support( 'title-tag' );
-
-		/*
-		 * Enable support for Post Thumbnails on posts and pages.
+	/**
+		 * Sets up needed actions/filters for the theme to initialize.
 		 *
-		 * @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
+		 * @since 1.0.0
 		 */
-		add_theme_support( 'post-thumbnails' );
+		public function __construct() {
 
-		// This theme uses wp_nav_menu() in one location.
-		register_nav_menus( array(
-			'menu-1' => esc_html__( 'Primary', 'codelab' ),
-		) );
+			$template      = get_template();
+			$theme_obj     = wp_get_theme( $template );
+			$this->version = $theme_obj->get( 'Version' );
 
-		/*
-		 * Switch default core markup for search form, comment form, and comments
-		 * to output valid HTML5.
-		 */
-		add_theme_support( 'html5', array(
-			'search-form',
-			'comment-form',
-			'comment-list',
-			'gallery',
-			'caption',
-		) );
+			// Load the theme modules.
+			//add_action( 'after_setup_theme', array( $this, 'framework_loader' ), -20 );
 
-		// Set up the WordPress core custom background feature.
-		add_theme_support( 'custom-background', apply_filters( 'codelab_custom_background_args', array(
-			'default-color' => 'ffffff',
-			'default-image' => '',
-		) ) );
+			// Init properties.
+			//add_action( 'wp_head', array( $this, 'init_theme_properties' ) );
 
-		// Add theme support for selective refresh for widgets.
-		add_theme_support( 'customize-selective-refresh-widgets' );
+			// Language functions and translations setup.
+			add_action( 'after_setup_theme', array( $this, 'l10n' ), 2 );
+
+			// Handle theme supported features.
+			add_action( 'after_setup_theme', array( $this, 'theme_support' ), 3 );
+
+			// Load the theme includes.
+			add_action( 'after_setup_theme', array( $this, 'includes' ), 4 );
+
+			// Load theme modules.
+			add_action( 'after_setup_theme', array( $this, 'load_modules' ), 5 );
+
+			// Initialization of customizer.
+			//add_action( 'after_setup_theme', array( $this, 'init_customizer' ) );
+
+			// Register public assets.
+			add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ), 9 );
+
+			// Enqueue scripts.
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
+
+			// Enqueue styles.
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ), 10 );
+
+			// Enqueue admin assets.
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+
+			// Maybe register Elementor Pro locations.
+			add_action( 'elementor/theme/register_locations', array( $this, 'elementor_locations' ) );
+
+
+		}
 
 		/**
-		 * Add support for core custom logo.
+		 * Retuns theme version
 		 *
-		 * @link https://codex.wordpress.org/Theme_Logo
+		 * @return string
 		 */
-		add_theme_support( 'custom-logo', array(
-			'height'      => 250,
-			'width'       => 250,
-			'flex-width'  => true,
-			'flex-height' => true,
-		) );
+		public function version() {
+			return apply_filters( 'aura-theme/version', $this->version );
+		}
+
+		/**
+		 * Load the theme modules.
+		 *
+		 * @since  1.0.0
+		 */
+		// public function framework_loader() {
+
+		// 	require get_theme_file_path( 'framework/loader.php' );
+
+		// 	$this->framework = new Aura_CX_Loader(
+		// 		array(
+		// 			get_theme_file_path( 'framework/modules/customizer/cherry-x-customizer.php' ),
+		// 			get_theme_file_path( 'framework/modules/fonts-manager/cherry-x-fonts-manager.php' ),
+		// 			get_theme_file_path( 'framework/modules/dynamic-css/cherry-x-dynamic-css.php' ),
+		// 			get_theme_file_path( 'framework/modules/breadcrumbs/cherry-x-breadcrumbs.php' ),
+		// 			get_theme_file_path( 'framework/modules/post-meta/cherry-x-post-meta.php' ),
+		// 			get_theme_file_path( 'framework/modules/interface-builder/cherry-x-interface-builder.php' ),
+		// 			get_theme_file_path( 'framework/modules/vue-ui/cherry-x-vue-ui.php' ),
+		// 		)
+		// 	);
+		// }
 
 		
+		/**
+		 * Loads the theme translation file.
+		 *
+		 * @since 1.0.0
+		 */
+		public function l10n() {
+
+			/*
+			 * Make theme available for translation.
+			 * Translations can be filed in the /languages/ directory.
+			 */
+			load_theme_textdomain( 'aura', get_theme_file_path( 'languages' ) );
+
+		}
+
+
+		/**
+		 * Adds theme supported features.
+		 *
+		 * @since 1.0.0
+		 */
+		public function theme_support() {
+
+			global $content_width;
+
+			if ( ! isset( $content_width ) ) {
+				$content_width = 1140;
+			}
+
+			// Add support for core custom logo.
+			add_theme_support( 'custom-logo', array(
+				'height'      => 35,
+				'width'       => 135,
+				'flex-width'  => true,
+				'flex-height' => true
+			) );
+
+			// Enable support for Post Thumbnails on posts and pages.
+			add_theme_support( 'post-thumbnails' );
+
+			// Enable HTML5 markup structure.
+			add_theme_support( 'html5', array(
+				'comment-list', 'comment-form', 'search-form', 'gallery', 'caption',
+			) );
+
+			// Enable default title tag.
+			add_theme_support( 'title-tag' );
+
+			// Enable custom background.
+			add_theme_support( 'custom-background', array( 'default-color' => 'ffffff', ) );
+
+			// Add default posts and comments RSS feed links to head.
+			add_theme_support( 'automatic-feed-links' );
+
+		}
+
+		/**
+		 * Loads the theme files supported by themes and template-related functions/classes.
+		 *
+		 * @since 1.0.0
+		 */
+		public function includes() {
+
+			/**
+			 * Configurations.
+			 */
+			require_once get_theme_file_path( 'config/layout.php' );
+			require_once get_theme_file_path( 'config/menus.php' );
+			//require_once get_theme_file_path( 'config/sidebars.php' );
+			require_once get_theme_file_path( 'config/modules.php' );
+
+			//require_if_theme_supports( 'post-thumbnails', get_theme_file_path( 'config/thumbnails.php' ) );
+
+			require_once get_theme_file_path( 'inc/modules/base.php' );
+
+			/**
+			 * Classes.
+			*/
+			//require_once get_theme_file_path( 'inc/classes/class-widget-area.php' );
+			//require_once get_theme_file_path( 'inc/classes/class-post-meta.php' );
+			//require_once get_theme_file_path( 'inc/classes/class-settings.php' );
+			//require_once get_theme_file_path( 'inc/classes/class-dynamic-css-file.php' );
+
+			/**
+			 * Functions.
+			 */
+			//require_once get_theme_file_path( 'inc/template-tags.php' );
+			//require_once get_theme_file_path( 'inc/template-menu.php' );
+			//require_once get_theme_file_path( 'inc/template-comment.php' );
+			//require_once get_theme_file_path( 'inc/template-related-posts.php' );
+			require_once get_theme_file_path( 'inc/extras.php' );
+			//require_once get_theme_file_path( 'inc/customizer.php' );
+			//require_once get_theme_file_path( 'inc/context.php' );
+			//require_once get_theme_file_path( 'inc/hooks.php' );
+
+		}
+
+		/**
+		 * Modules base path
+		 *
+		 * @return string
+		 */
+		public function modules_base() {
+			return 'inc/modules/';
+		}
+
+		/**
+		 * Returns module class by name
+		 * @return string
+		 */
+		public function get_module_class( $name ) {
+
+			$module = str_replace( ' ', '_', ucwords( str_replace( '-', ' ', $name ) ) );
+			return 'Aura_' . $module . '_Module';
+
+		}
+
+		/**
+		 * Load theme and child theme modules
+		 *
+		 * @return void
+		 */
+		public function load_modules() {
+
+			$available_modules = aura_settings()->get( 'available_modules' );
+
+			foreach ( aura_get_allowed_modules() as $module => $childs ) {
+
+				$enabled = isset( $available_modules[ $module ] ) ? $available_modules[ $module ] : true;
+
+				if ( filter_var( $enabled, FILTER_VALIDATE_BOOLEAN ) ) {
+					$this->load_module( $module, $childs );
+				}
+			}
+		}
+
+		/**
+		 * Load theme and child theme module
+		 *
+		 * @param string $module
+		 * @param array  $childs
+		 */
+		public function load_module( $module = '', $childs = array() ) {
+
+			if ( ! file_exists( get_theme_file_path( $this->modules_base() . $module . '/module.php' ) ) ) {
+				return;
+			}
+
+			require_once get_theme_file_path( $this->modules_base() . $module . '/module.php' );
+			$class = $this->get_module_class( $module );
+
+			if ( ! class_exists( $class ) ) {
+				return;
+			}
+
+			$instance = new $class( $childs );
+
+			$this->modules[ $instance->module_id() ] = $instance;
+		}
+
+		/**
+		 * Register assets.
+		 *
+		 * @since 1.0.0
+		 */
+		public function register_assets() {
+			// Register style
+			wp_register_style(
+				'font-awesome',
+				get_theme_file_uri( 'assets/lib/font-awesome/font-awesome.min.css' ),
+				array(),
+				'4.7.0'
+			);
+		}
+
+		/**
+		 * Enqueue scripts.
+		 *
+		 * @since 1.0.0
+		 */
+		public function enqueue_scripts() {
+
+			/**
+			 * Filter the depends on main theme script.
+			 *
+			 * @since 1.0.0
+			 * @var   array
+			 */
+			$scripts_depends = apply_filters( 'aura-theme/assets-depends/script', array(
+				'jquery'
+			) );
+
+			$enqueue_js_scripts = aura_settings()->get( 'enqueue_theme_js_scripts', true );
+
+			if ( filter_var( $enqueue_js_scripts, FILTER_VALIDATE_BOOLEAN ) ) {
+				wp_enqueue_script(
+					'aura-theme-script',
+					get_theme_file_uri( 'assets/js/theme-script.js' ),
+					$scripts_depends,
+					$this->version(),
+					true
+				);
+
+				wp_localize_script( 'aura-theme-script', 'auraConfig', array(
+					'toTop' => aura_theme()->customizer->get_value( 'totop_visibility' ),
+				) );
+			}
+
+			// Threaded Comments.
+			if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
+				wp_enqueue_script( 'comment-reply' );
+			}
+
+		}
+
+		/**
+		 * Enqueue styles.
+		 *
+		 * @since 1.0.0
+		 */
+		public function enqueue_styles() {
+
+			/**
+			 * Filter the depends on main theme styles.
+			 *
+			 * @since 1.0.0
+			 * @var   array
+			 */
+			$styles_depends = apply_filters( 'aura-theme/assets-depends/styles', array(
+				'font-awesome',
+			) );
+
+			wp_enqueue_style(
+				'aura-theme-style',
+				get_stylesheet_uri(),
+				$styles_depends,
+				$this->version()
+			);
+
+			$enqueue_styles = aura_settings()->get( 'enqueue_theme_styles', true );
+
+			if ( filter_var( $enqueue_styles, FILTER_VALIDATE_BOOLEAN ) ) {
+				wp_enqueue_style(
+					'aura-theme-main-style',
+					get_theme_file_uri( 'theme.css' ),
+					array( 'aura-theme-style' ),
+					$this->version()
+				);
+
+				if ( is_rtl() ) {
+					wp_enqueue_style(
+						'aura-theme-main-rtl-style',
+						get_theme_file_uri( 'theme-rtl.css' ),
+						false,
+						$this->version()
+					);
+				}
+			}
+		}
+
+		/**
+		 * Enqueue admin assets
+		 *
+		 * @return void
+		 */
+		public function enqueue_admin_assets() {
+			wp_enqueue_style(
+				'aura-theme-admin-css',
+				get_parent_theme_file_uri( 'assets/css/admin.css' ),
+				false,
+				$this->version()
+			);
+		}
+
 		/**
 		 * Do Elementor or Jet Theme Core location
 		 *
@@ -126,13 +418,26 @@ if ( ! function_exists( 'codelab_setup' ) ) :
 
 		}
 
+		/**
+		 * Register Elementor Pro locations
+		 *
+		 * @param object $elementor_theme_manager
+		 */
+		public function elementor_locations( $elementor_theme_manager ) {
 
-		
+			// Do nothing if Jet Theme Core is active.
+			if ( function_exists( 'jet_theme_core' ) ) {
+				return;
+			}
+
+			$elementor_theme_manager->register_all_core_location();
+		}
+
 		/**
 		 * Returns the instance.
 		 *
 		 * @since  1.0.0
-		 * @return Codelab_Theme_Setup
+		 * @return Aura_Theme_Setup
 		 */
 		public static function get_instance() {
 
@@ -146,97 +451,17 @@ if ( ! function_exists( 'codelab_setup' ) ) :
 		}
 
 	}
-endif;
 
-
-add_action( 'after_setup_theme', 'codelab_setup' );
-
-/**
- * Set the content width in pixels, based on the theme's design and stylesheet.
- *
- * Priority 0 to make it available to lower priority callbacks.
- *
- * @global int $content_width
- */
-function codelab_content_width() {
-	// This variable is intended to be overruled from themes.
-	// Open WPCS issue: {@link https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/issues/1043}.
-	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
-	$GLOBALS['content_width'] = apply_filters( 'codelab_content_width', 640 );
 }
-add_action( 'after_setup_theme', 'codelab_content_width', 0 );
-
-/**
- * Register widget area.
- *
- * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
- */
-function codelab_widgets_init() {
-	register_sidebar( array(
-		'name'          => esc_html__( 'Sidebar', 'codelab' ),
-		'id'            => 'sidebar-1',
-		'description'   => esc_html__( 'Add widgets here.', 'codelab' ),
-		'before_widget' => '<section id="%1$s" class="widget %2$s">',
-		'after_widget'  => '</section>',
-		'before_title'  => '<h2 class="widget-title">',
-		'after_title'   => '</h2>',
-	) );
-}
-add_action( 'widgets_init', 'codelab_widgets_init' );
-
-/**
- * Enqueue scripts and styles.
- */
-function codelab_scripts() {
-	wp_enqueue_style( 'codelab-style', get_stylesheet_uri() );
-
-	wp_enqueue_script( 'codelab-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20151215', true );
-
-	wp_enqueue_script( 'codelab-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20151215', true );
-
-	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
-		wp_enqueue_script( 'comment-reply' );
-	}
-}
-add_action( 'wp_enqueue_scripts', 'codelab_scripts' );
-
-/**
- * Implement the Custom Header feature.
- */
-require get_template_directory() . '/inc/custom-header.php';
-
-/**
- * Custom template tags for this theme.
- */
-require get_template_directory() . '/inc/template-tags.php';
-
-/**
- * Functions which enhance the theme by hooking into WordPress.
- */
-require get_template_directory() . '/inc/template-functions.php';
-
-/**
- * Customizer additions.
- */
-require get_template_directory() . '/inc/customizer.php';
-
-/**
- * Load Jetpack compatibility file.
- */
-if ( defined( 'JETPACK__VERSION' ) ) {
-	require get_template_directory() . '/inc/jetpack.php';
-}
-
-
 
 /**
  * Returns instance of main theme configuration class.
  *
  * @since  1.0.0
- * @return Codelab_Theme_Setup
+ * @return Aura_Theme_Setup
  */
-function codelab_theme() {
-	return Codelab_Theme_Setup::get_instance();
+function aura_theme() {
+	return Aura_Theme_Setup::get_instance();
 }
 
-codelab_theme();
+aura_theme();
