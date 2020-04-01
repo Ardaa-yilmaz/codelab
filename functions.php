@@ -1,5 +1,5 @@
 <?php
-if( ! class_exists(Aura_Theme_Setup)) {
+if( ! class_exists('Aura_Theme_Setup')) {
 	/**
 	 * Sets up theme defaults and registers support for various WordPress features.
 	 *
